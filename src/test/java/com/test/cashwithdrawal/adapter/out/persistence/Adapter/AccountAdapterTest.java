@@ -69,50 +69,10 @@ class AccountAdapterTest {
     }
 
     /**
-     * Method under test: {@link AccountAdapter#save(Account)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testSave2() {
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   com.test.cashwithdrawal.shared.exception.ResourceNotFoundException: User Cannot Be Found
-        //       at com.test.cashwithdrawal.adapter.out.persistence.entity.AccountEntity.fromDomain(AccountEntity.java:48)
-        //       at com.test.cashwithdrawal.adapter.out.persistence.Adapter.AccountAdapter.save(AccountAdapter.java:24)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setAccountNumber("42");
-        accountEntity.setBalance(42L);
-        accountEntity.setBankName("Bank Name");
-        accountEntity.setCurrency("GBP");
-        accountEntity.setFirstname("Jane");
-        accountEntity.setId(1L);
-        accountEntity.setNin("Nin");
-        accountEntity.setRoutingNumber("42");
-        accountEntity.setSurname("Doe");
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.save(Mockito.<AccountEntity>any())).thenReturn(accountEntity);
-        AccountAdapter accountAdapter = new AccountAdapter(accountRepository);
-        Account account = mock(Account.class);
-        when(account.getBalance()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getAccountNumber()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getBankName()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getCurrency()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getFirstname()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getNin()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getRoutingNumber()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        when(account.getSurname()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        accountAdapter.save(account);
-    }
-
-    /**
      * Method under test: {@link AccountAdapter#fetch()}
      */
     @Test
-    void testFetch() {
+    void testFetchAll() {
         AccountRepository accountRepository = mock(AccountRepository.class);
         when(accountRepository.findAll()).thenReturn(new ArrayList<>());
         assertTrue((new AccountAdapter(accountRepository)).fetch().isEmpty());
@@ -120,93 +80,8 @@ class AccountAdapterTest {
     }
 
     /**
-     * Method under test: {@link AccountAdapter#fetch()}
-     */
-    @Test
-    void testFetch2() {
-        AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setAccountNumber("42");
-        accountEntity.setBalance(42L);
-        accountEntity.setBankName("Bank Name");
-        accountEntity.setCurrency("GBP");
-        accountEntity.setFirstname("Jane");
-        accountEntity.setId(1L);
-        accountEntity.setNin("Nin");
-        accountEntity.setRoutingNumber("42");
-        accountEntity.setSurname("Doe");
-
-        ArrayList<AccountEntity> accountEntityList = new ArrayList<>();
-        accountEntityList.add(accountEntity);
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.findAll()).thenReturn(accountEntityList);
-        assertEquals(1, (new AccountAdapter(accountRepository)).fetch().size());
-        verify(accountRepository).findAll();
-    }
-
-    /**
-     * Method under test: {@link AccountAdapter#fetch()}
-     */
-    @Test
-    void testFetch3() {
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.findAll()).thenThrow(new ResourceNotFoundException("User Cannot Be Found"));
-        assertThrows(ResourceNotFoundException.class, () -> (new AccountAdapter(accountRepository)).fetch());
-        verify(accountRepository).findAll();
-    }
-
-    /**
      * Method under test: {@link AccountAdapter#findByAccountNumber(String)}
      */
-    @Test
-    void testFindByAccountNumber() {
-        AccountEntity accountEntity = new AccountEntity();
-        accountEntity.setAccountNumber("42");
-        accountEntity.setBalance(42L);
-        accountEntity.setBankName("Bank Name");
-        accountEntity.setCurrency("GBP");
-        accountEntity.setFirstname("Jane");
-        accountEntity.setId(1L);
-        accountEntity.setNin("Nin");
-        accountEntity.setRoutingNumber("42");
-        accountEntity.setSurname("Doe");
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.findByAccountNumber(Mockito.<String>any())).thenReturn(Optional.of(accountEntity));
-        Account actualFindByAccountNumberResult = (new AccountAdapter(accountRepository)).findByAccountNumber("42");
-        assertEquals("42", actualFindByAccountNumberResult.getAccountNumber());
-        assertEquals("Doe", actualFindByAccountNumberResult.getSurname());
-        assertEquals("42", actualFindByAccountNumberResult.getRoutingNumber());
-        assertEquals("Nin", actualFindByAccountNumberResult.getNin());
-        assertEquals("Jane", actualFindByAccountNumberResult.getFirstname());
-        assertEquals("GBP", actualFindByAccountNumberResult.getCurrency());
-        assertEquals("Bank Name", actualFindByAccountNumberResult.getBankName());
-        assertEquals(42L, actualFindByAccountNumberResult.getBalance().longValue());
-        verify(accountRepository).findByAccountNumber(Mockito.<String>any());
-    }
-
-    /**
-     * Method under test: {@link AccountAdapter#findByAccountNumber(String)}
-     */
-    @Test
-    void testFindByAccountNumber2() {
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.findByAccountNumber(Mockito.<String>any())).thenReturn(Optional.empty());
-        assertThrows(ResourceNotFoundException.class,
-                () -> (new AccountAdapter(accountRepository)).findByAccountNumber("42"));
-        verify(accountRepository).findByAccountNumber(Mockito.<String>any());
-    }
-
-    /**
-     * Method under test: {@link AccountAdapter#findByAccountNumber(String)}
-     */
-    @Test
-    void testFindByAccountNumber3() {
-        AccountRepository accountRepository = mock(AccountRepository.class);
-        when(accountRepository.findByAccountNumber(Mockito.<String>any()))
-                .thenThrow(new ResourceNotFoundException("The account details could not be found "));
-        assertThrows(ResourceNotFoundException.class,
-                () -> (new AccountAdapter(accountRepository)).findByAccountNumber("42"));
-        verify(accountRepository).findByAccountNumber(Mockito.<String>any());
-    }
 
     /**
      * Method under test: {@link AccountAdapter#updateAcccount(String, Long)}

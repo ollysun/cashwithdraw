@@ -3,25 +3,23 @@ package com.test.cashwithdrawal.adapter.in.web;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.Mockito.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.test.cashwithdrawal.adapter.in.request.CreateAccountRequest;
-import com.test.cashwithdrawal.adapter.in.request.DestinationTransferRequest;
-import com.test.cashwithdrawal.adapter.in.request.SourceTransferRequest;
-import com.test.cashwithdrawal.adapter.in.request.TransferAccountRequest;
-import com.test.cashwithdrawal.adapter.in.request.TransferMoneyCommandRequest;
+import com.test.cashwithdrawal.adapter.in.request.*;
 import com.test.cashwithdrawal.adapter.in.response.PaymentInfoResponse;
+import com.test.cashwithdrawal.adapter.in.response.RequestInfoResponse;
 import com.test.cashwithdrawal.adapter.in.response.TransferResponse;
 import com.test.cashwithdrawal.adapter.out.persistence.Adapter.AccountAdapter;
 import com.test.cashwithdrawal.adapter.out.persistence.repositories.AccountRepository;
 import com.test.cashwithdrawal.application.port.in.AccountUseCase;
 import com.test.cashwithdrawal.application.port.in.PaymentRestClient;
 import com.test.cashwithdrawal.application.port.in.TransferMoneyCommand;
+import com.test.cashwithdrawal.application.port.in.security.SecurityConfig;
 import com.test.cashwithdrawal.application.port.out.TransactionPort;
 import com.test.cashwithdrawal.application.port.out.UpdateAccountStatePort;
 import com.test.cashwithdrawal.application.service.AccountService;
@@ -31,19 +29,31 @@ import com.test.cashwithdrawal.domain.AccountDomain.RequestInfo;
 import com.test.cashwithdrawal.domain.AccountDomain.TransferPaymentResponse;
 
 import java.util.ArrayList;
+import java.util.UUID;
 
+import lombok.With;
+import lombok.extern.slf4j.Slf4j;
+import org.aspectj.lang.annotation.Before;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -51,447 +61,147 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.client.RestTemplate;
 
-@ContextConfiguration(classes = {AccountController.class})
-@ExtendWith(SpringExtension.class)
+@Slf4j
+@WebMvcTest(controllers = AccountController.class)
+@AutoConfigureMockMvc(addFilters = false)
+@Import(SecurityConfig.class)
 class AccountControllerTest {
+
     @Autowired
-    private AccountController accountController;
+    private MockMvc mockMvc;
 
     @MockBean
     private AccountUseCase accountUseCase;
 
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
+    @MockBean
+    private TransferResponse transferResponse;
+
+
+    private final ObjectMapper mapper= new ObjectMapper();
+
+
     @Test
-    @Disabled("TODO: Complete this test")
-    void testTransferMoney() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
+    @WithMockUser("moses")
+    void testTransferMoneyReturnBadRequest() throws Exception {
 
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException
-        //       at com.test.cashwithdrawal.adapter.in.request.DestinationTransferRequest.toDomain(DestinationTransferRequest.java:20)
-        //       at com.test.cashwithdrawal.adapter.in.request.TransferMoneyCommandRequest.toTransferMoneyCommand(TransferMoneyCommandRequest.java:15)
-        //       at com.test.cashwithdrawal.adapter.in.web.AccountController.transferMoney(AccountController.java:34)
-        //   See https://diff.blue/R013 to resolve this issue.
+        var sourceTransferRequest = new TransferAccountRequest();
+        sourceTransferRequest.setAccountNumber("0245253419");
+        sourceTransferRequest.setCurrency("USD");
+        sourceTransferRequest.setRoutingNumber("028444018");
 
-        TransactionPort transactionPort = mock(TransactionPort.class);
-        UpdateAccountStatePort updateAccountStatePort = mock(UpdateAccountStatePort.class);
-        AccountAdapter accountPort = new AccountAdapter(mock(AccountRepository.class));
-        AccountController accountController = new AccountController(new AccountService(transactionPort,
-                updateAccountStatePort, accountPort, new PaymentRestClient(mock(RestTemplate.class))));
-        SourceTransferRequest source = new SourceTransferRequest();
-        accountController.transferMoney(new TransferMoneyCommandRequest(source, new DestinationTransferRequest(), 10L));
+        var destinationTransferRequest = new TransferAccountRequest();
+        destinationTransferRequest.setAccountNumber("1885226711");
+        destinationTransferRequest.setCurrency("USD");
+        destinationTransferRequest.setRoutingNumber("211927207");
+
+        var sourceaccount = new CreateAccountRequest();
+        sourceaccount.setCurrency("USD");
+        sourceaccount.setNin("2345tt5t");
+        sourceaccount.setBalance(5000L);
+        sourceaccount.setFirstname("man");
+        sourceaccount.setRoutingNumber("028444018");
+        sourceaccount.setSurname("mike");
+        sourceaccount.setAccountNumber("0245253419");
+
+
+        when(accountUseCase.createAccount(sourceaccount.toAccountDomain())).thenReturn(sourceaccount.toAccountDomain());
+        var destination = new DestinationTransferRequest();
+        destination.setAccount(destinationTransferRequest);
+        destination.setName("TONY STARK");
+
+        var sourceInformation = new SourceInformationRequest();
+        sourceInformation.setName("ONTOP INC");
+
+        var sourcetransfer = new SourceTransferRequest();
+        sourcetransfer.setAccount(sourceTransferRequest);
+        sourcetransfer.setType("COMPANY");
+        sourcetransfer.setSourceInformation(sourceInformation);
+
+        var request = TransferMoneyCommandRequest.builder()
+                        .source(sourcetransfer)
+                        .destination(destination)
+                        .amount(300L)
+                        .build();
+        mockMvc.perform(post("/accounts/payment")
+                        .contentType(MediaType.APPLICATION_JSON_VALUE)
+                        .content(request.toTransferMoneyCommand().toString()))
+                .andExpect(status().isBadRequest());
     }
 
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
+
     @Test
-    @Disabled("TODO: Complete this test")
-    void testTransferMoney2() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
+    @WithMockUser("john")
+    void testTransferMoneyReturnSuccessful() throws Exception {
 
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException
-        //       at com.test.cashwithdrawal.adapter.in.request.SourceTransferRequest.toDomain(SourceTransferRequest.java:22)
-        //       at com.test.cashwithdrawal.adapter.in.request.TransferMoneyCommandRequest.toTransferMoneyCommand(TransferMoneyCommandRequest.java:16)
-        //       at com.test.cashwithdrawal.adapter.in.web.AccountController.transferMoney(AccountController.java:34)
-        //   See https://diff.blue/R013 to resolve this issue.
+        var sourceTransferRequest = new TransferAccountRequest();
+        sourceTransferRequest.setAccountNumber("0245253419");
+        sourceTransferRequest.setCurrency("USD");
+        sourceTransferRequest.setRoutingNumber("028444018");
 
-        TransactionPort transactionPort = mock(TransactionPort.class);
-        UpdateAccountStatePort updateAccountStatePort = mock(UpdateAccountStatePort.class);
-        AccountAdapter accountPort = new AccountAdapter(mock(AccountRepository.class));
-        AccountController accountController = new AccountController(new AccountService(transactionPort,
-                updateAccountStatePort, accountPort, new PaymentRestClient(mock(RestTemplate.class))));
+        var destinationTransferRequest = new TransferAccountRequest();
+        destinationTransferRequest.setAccountNumber("1885226711");
+        destinationTransferRequest.setCurrency("USD");
+        destinationTransferRequest.setRoutingNumber("211927207");
 
-        DestinationTransferRequest destination = new DestinationTransferRequest();
-        destination.setAccount(new TransferAccountRequest());
-        accountController.transferMoney(new TransferMoneyCommandRequest(new SourceTransferRequest(), destination, 10L));
+
+        var sourceaccount = new CreateAccountRequest();
+        sourceaccount.setCurrency("USD");
+        sourceaccount.setNin("2345tt5t");
+        sourceaccount.setBalance(5000L);
+        sourceaccount.setFirstname("man");
+        sourceaccount.setRoutingNumber("028444018");
+        sourceaccount.setSurname("mike");
+        sourceaccount.setAccountNumber("0245253419");
+
+        when(accountUseCase.createAccount(any()))
+                .thenReturn(sourceaccount.toAccountDomain());
+
+        var destination = new DestinationTransferRequest();
+        destination.setAccount(destinationTransferRequest);
+        destination.setName("TONY STARK");
+
+        var sourceInformation = new SourceInformationRequest();
+        sourceInformation.setName("ONTOP INC");
+
+        var sourcetransfer = new SourceTransferRequest();
+        sourcetransfer.setAccount(sourceTransferRequest);
+        sourcetransfer.setType("COMPANY");
+        sourcetransfer.setSourceInformation(sourceInformation);
+
+        var request = TransferMoneyCommandRequest.builder()
+                .source(sourcetransfer)
+                .destination(destination)
+                .amount(300L)
+                .build();
+
+        var requestInfo = new RequestInfo("processing");
+        var paymentInfo = new PaymentInfo(300L, UUID.randomUUID().toString());
+
+
+        var requestInfoResponse = new RequestInfoResponse("processing");
+        var paymentInfoResponse = new PaymentInfoResponse(300L, UUID.randomUUID().toString());
+
+        var transferpaymentResponse = new TransferPaymentResponse();
+        transferpaymentResponse.setPaymentInfo(paymentInfo);
+        transferpaymentResponse.setRequestInfo(requestInfo);
+
+
+        doReturn(transferpaymentResponse).when(accountUseCase).sendMoney(any());
+
+        var transferresponseTest = new TransferResponse();
+        transferresponseTest.setPaymentInfoResponse(paymentInfoResponse);
+        transferresponseTest.setRequestInfoResponse(requestInfoResponse);
+        transferresponseTest.fromDomain(transferpaymentResponse);
+
+        mockMvc.perform(post("/accounts/payment")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(mapper.writeValueAsString(request.toTransferMoneyCommand()))
+                        .characterEncoding("utf-8"))
+                        .andExpect(status().isOk());
+
+
+
     }
 
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testTransferMoney3() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException
-        //       at com.test.cashwithdrawal.application.service.AccountService.sendMoney(AccountService.java:40)
-        //       at com.test.cashwithdrawal.adapter.in.web.AccountController.transferMoney(AccountController.java:35)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        TransactionPort transactionPort = mock(TransactionPort.class);
-        UpdateAccountStatePort updateAccountStatePort = mock(UpdateAccountStatePort.class);
-        AccountAdapter accountPort = new AccountAdapter(mock(AccountRepository.class));
-        AccountController accountController = new AccountController(new AccountService(transactionPort,
-                updateAccountStatePort, accountPort, new PaymentRestClient(mock(RestTemplate.class))));
-        SourceTransferRequest source = mock(SourceTransferRequest.class);
-        when(source.toDomain()).thenReturn(null);
-
-        TransferAccountRequest account = new TransferAccountRequest();
-        account.setAccountNumber("42");
-
-        DestinationTransferRequest destination = new DestinationTransferRequest();
-        destination.setAccount(account);
-        accountController.transferMoney(new TransferMoneyCommandRequest(source, destination, 10L));
-    }
-
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testTransferMoney4() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException
-        //       at com.test.cashwithdrawal.adapter.in.response.RequestInfoResponse.toRequestInfoResponse(RequestInfoResponse.java:15)
-        //       at com.test.cashwithdrawal.adapter.in.response.TransferResponse.fromDomain(TransferResponse.java:20)
-        //       at com.test.cashwithdrawal.adapter.in.web.AccountController.transferMoney(AccountController.java:36)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        AccountUseCase accountUseCase = mock(AccountUseCase.class);
-        when(accountUseCase.sendMoney(Mockito.<TransferMoneyCommand>any())).thenReturn(new TransferPaymentResponse());
-        AccountController accountController = new AccountController(accountUseCase);
-        SourceTransferRequest source = mock(SourceTransferRequest.class);
-        when(source.toDomain()).thenReturn(null);
-
-        TransferAccountRequest account = new TransferAccountRequest();
-        account.setAccountNumber("42");
-
-        DestinationTransferRequest destination = new DestinationTransferRequest();
-        destination.setAccount(account);
-        accountController.transferMoney(new TransferMoneyCommandRequest(source, destination, 10L));
-    }
-
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
-    @Test
-    void testTransferMoney5() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        AccountUseCase accountUseCase = mock(AccountUseCase.class);
-        RequestInfo requestInfo = new RequestInfo("Status");
-        when(accountUseCase.sendMoney(Mockito.<TransferMoneyCommand>any()))
-                .thenReturn(new TransferPaymentResponse(requestInfo, new PaymentInfo()));
-        AccountController accountController = new AccountController(accountUseCase);
-        SourceTransferRequest source = mock(SourceTransferRequest.class);
-        when(source.toDomain()).thenReturn(null);
-
-        TransferAccountRequest account = new TransferAccountRequest();
-        account.setAccountNumber("42");
-
-        DestinationTransferRequest destination = new DestinationTransferRequest();
-        destination.setAccount(account);
-        ResponseEntity<TransferResponse> actualTransferMoneyResult = accountController
-                .transferMoney(new TransferMoneyCommandRequest(source, destination, 10L));
-        assertTrue(actualTransferMoneyResult.hasBody());
-        assertTrue(actualTransferMoneyResult.getHeaders().isEmpty());
-        assertEquals(HttpStatus.OK, actualTransferMoneyResult.getStatusCode());
-        TransferResponse body = actualTransferMoneyResult.getBody();
-        assertEquals("Status", body.getRequestInfoResponse().getStatus());
-        PaymentInfoResponse paymentInfoResponse = body.getPaymentInfoResponse();
-        assertNull(paymentInfoResponse.getId());
-        assertNull(paymentInfoResponse.getAmount());
-        verify(accountUseCase).sendMoney(Mockito.<TransferMoneyCommand>any());
-        verify(source, atLeast(1)).toDomain();
-    }
-
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
-    @Test
-    @Disabled("TODO: Complete this test")
-    void testTransferMoney6() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        // TODO: Complete this test.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.lang.NullPointerException
-        //       at com.test.cashwithdrawal.adapter.in.response.PaymentInfoResponse.toPaymentInfoResponse(PaymentInfoResponse.java:17)
-        //       at com.test.cashwithdrawal.adapter.in.response.TransferResponse.fromDomain(TransferResponse.java:21)
-        //       at com.test.cashwithdrawal.adapter.in.web.AccountController.transferMoney(AccountController.java:36)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        TransferPaymentResponse transferPaymentResponse = mock(TransferPaymentResponse.class);
-        when(transferPaymentResponse.getPaymentInfo()).thenReturn(null);
-        when(transferPaymentResponse.getRequestInfo()).thenReturn(new RequestInfo("Status"));
-        AccountUseCase accountUseCase = mock(AccountUseCase.class);
-        when(accountUseCase.sendMoney(Mockito.<TransferMoneyCommand>any())).thenReturn(transferPaymentResponse);
-        AccountController accountController = new AccountController(accountUseCase);
-        SourceTransferRequest source = mock(SourceTransferRequest.class);
-        when(source.toDomain()).thenReturn(null);
-
-        TransferAccountRequest account = new TransferAccountRequest();
-        account.setAccountNumber("42");
-
-        DestinationTransferRequest destination = new DestinationTransferRequest();
-        destination.setAccount(account);
-        accountController.transferMoney(new TransferMoneyCommandRequest(source, destination, 10L));
-    }
-
-    /**
-     * Method under test: {@link AccountController#transferMoney(TransferMoneyCommandRequest)}
-     */
-    @Test
-    void testTransferMoney7() {
-        //   Diffblue Cover was unable to write a Spring test,
-        //   so wrote a non-Spring test instead.
-        //   Reason: R013 No inputs found that don't throw a trivial exception.
-        //   Diffblue Cover tried to run the arrange/act section, but the method under
-        //   test threw
-        //   java.nio.charset.IllegalCharsetNameException: https://example.org/example
-        //       at java.nio.charset.Charset.checkName(Charset.java:308)
-        //       at java.nio.charset.Charset.lookup2(Charset.java:482)
-        //       at java.nio.charset.Charset.lookup(Charset.java:462)
-        //       at java.nio.charset.Charset.forName(Charset.java:526)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:555)
-        //       at javax.servlet.http.HttpServlet.service(HttpServlet.java:623)
-        //   See https://diff.blue/R013 to resolve this issue.
-
-        TransferPaymentResponse transferPaymentResponse = mock(TransferPaymentResponse.class);
-        when(transferPaymentResponse.getPaymentInfo()).thenReturn(new PaymentInfo());
-        when(transferPaymentResponse.getRequestInfo()).thenReturn(new RequestInfo("Status"));
-        AccountUseCase accountUseCase = mock(AccountUseCase.class);
-        when(accountUseCase.sendMoney(Mockito.<TransferMoneyCommand>any())).thenReturn(transferPaymentResponse);
-        AccountController accountController = new AccountController(accountUseCase);
-        SourceTransferRequest source = mock(SourceTransferRequest.class);
-        when(source.toDomain()).thenReturn(null);
-
-        TransferAccountRequest account = new TransferAccountRequest();
-        account.setAccountNumber("42");
-        DestinationTransferRequest destination = mock(DestinationTransferRequest.class);
-        when(destination.toDomain()).thenReturn(null);
-        doNothing().when(destination).setAccount(Mockito.<TransferAccountRequest>any());
-        destination.setAccount(account);
-        ResponseEntity<TransferResponse> actualTransferMoneyResult = accountController
-                .transferMoney(new TransferMoneyCommandRequest(source, destination, 10L));
-        assertTrue(actualTransferMoneyResult.hasBody());
-        assertTrue(actualTransferMoneyResult.getHeaders().isEmpty());
-        assertEquals(HttpStatus.OK, actualTransferMoneyResult.getStatusCode());
-        TransferResponse body = actualTransferMoneyResult.getBody();
-        assertEquals("Status", body.getRequestInfoResponse().getStatus());
-        PaymentInfoResponse paymentInfoResponse = body.getPaymentInfoResponse();
-        assertNull(paymentInfoResponse.getId());
-        assertNull(paymentInfoResponse.getAmount());
-        verify(accountUseCase).sendMoney(Mockito.<TransferMoneyCommand>any());
-        verify(transferPaymentResponse).getPaymentInfo();
-        verify(transferPaymentResponse).getRequestInfo();
-        verify(source, atLeast(1)).toDomain();
-        verify(destination, atLeast(1)).toDomain();
-        verify(destination).setAccount(Mockito.<TransferAccountRequest>any());
-    }
-
-    /**
-     * Method under test: {@link AccountController#createAccount(CreateAccountRequest)}
-     */
-    @Test
-    void testCreateAccount() throws Exception {
-        Account account = mock(Account.class);
-        when(account.getBalance()).thenReturn(42L);
-        when(account.getAccountNumber()).thenReturn("42");
-        when(account.getBankName()).thenReturn("Bank Name");
-        when(account.getCurrency()).thenReturn("GBP");
-        when(account.getFirstname()).thenReturn("Jane");
-        when(account.getNin()).thenReturn("Nin");
-        when(account.getRoutingNumber()).thenReturn("42");
-        when(account.getSurname()).thenReturn("Doe");
-        when(accountUseCase.createAccount(Mockito.<Account>any())).thenReturn(account);
-
-        CreateAccountRequest createAccountRequest = new CreateAccountRequest();
-        createAccountRequest.setAccountNumber("42");
-        createAccountRequest.setBalance(42L);
-        createAccountRequest.setBankName("Bank Name");
-        createAccountRequest.setCurrency("GBP");
-        createAccountRequest.setFirstname("Jane");
-        createAccountRequest.setNin("Nin");
-        createAccountRequest.setRoutingNumber("42");
-        createAccountRequest.setSurname("Doe");
-        String content = (new ObjectMapper()).writeValueAsString(createAccountRequest);
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/accounts/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content);
-        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(accountController)
-                .build()
-                .perform(requestBuilder);
-        actualPerformResult.andExpect(MockMvcResultMatchers.status().isCreated())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content()
-                        .string(
-                                "{\"surname\":\"Doe\",\"firstname\":\"Jane\",\"routingNumber\":\"42\",\"nin\":\"Nin\",\"accountNumber\":\"42\",\"bankName\":\"Bank"
-                                        + " Name\",\"currency\":\"GBP\",\"balance\":42}"));
-    }
-
-    /**
-     * Method under test: {@link AccountController#createAccount(CreateAccountRequest)}
-     */
-    @Test
-    void testCreateAccount2() throws Exception {
-        Account account = mock(Account.class);
-        when(account.getBalance()).thenReturn(42L);
-        when(account.getAccountNumber()).thenReturn("42");
-        when(account.getBankName()).thenReturn("Bank Name");
-        when(account.getCurrency()).thenReturn("GBP");
-        when(account.getFirstname()).thenReturn("Jane");
-        when(account.getNin()).thenReturn("Nin");
-        when(account.getRoutingNumber()).thenReturn("42");
-        when(account.getSurname()).thenReturn("Doe");
-        when(accountUseCase.createAccount(Mockito.<Account>any())).thenReturn(account);
-
-        CreateAccountRequest createAccountRequest = new CreateAccountRequest();
-        createAccountRequest.setAccountNumber("");
-        createAccountRequest.setBalance(42L);
-        createAccountRequest.setBankName("Bank Name");
-        createAccountRequest.setCurrency("GBP");
-        createAccountRequest.setFirstname("Jane");
-        createAccountRequest.setNin("Nin");
-        createAccountRequest.setRoutingNumber("42");
-        createAccountRequest.setSurname("Doe");
-        String content = (new ObjectMapper()).writeValueAsString(createAccountRequest);
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.post("/accounts/create")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(content);
-        ResultActions actualPerformResult = MockMvcBuilders.standaloneSetup(accountController)
-                .build()
-                .perform(requestBuilder);
-        actualPerformResult.andExpect(MockMvcResultMatchers.status().is(400));
-    }
-
-    /**
-     * Method under test: {@link AccountController#getAccounts()}
-     */
-    @Test
-    void testGetAccounts() throws Exception {
-        when(accountUseCase.getAll()).thenReturn(new ArrayList<>());
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/accounts");
-        MockMvcBuilders.standaloneSetup(accountController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content().string("[]"));
-    }
-
-    /**
-     * Method under test: {@link AccountController#getAccounts()}
-     */
-    @Test
-    void testGetAccounts2() throws Exception {
-        Account account = mock(Account.class);
-        when(account.getBalance()).thenReturn(42L);
-        when(account.getAccountNumber()).thenReturn("42");
-        when(account.getBankName()).thenReturn("Bank Name");
-        when(account.getCurrency()).thenReturn("GBP");
-        when(account.getFirstname()).thenReturn("Jane");
-        when(account.getNin()).thenReturn("Nin");
-        when(account.getRoutingNumber()).thenReturn("42");
-        when(account.getSurname()).thenReturn("Doe");
-
-        ArrayList<Account> accountList = new ArrayList<>();
-        accountList.add(account);
-        when(accountUseCase.getAll()).thenReturn(accountList);
-        MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get("/accounts");
-        MockMvcBuilders.standaloneSetup(accountController)
-                .build()
-                .perform(requestBuilder)
-                .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.content().contentType("application/json"))
-                .andExpect(MockMvcResultMatchers.content()
-                        .string(
-                                "[{\"surname\":\"Doe\",\"firstname\":\"Jane\",\"routingNumber\":\"42\",\"nin\":\"Nin\",\"accountNumber\":\"42\",\"bankName\":\"Bank"
-                                        + " Name\",\"currency\":\"GBP\",\"balance\":42}]"));
-    }
 }
 

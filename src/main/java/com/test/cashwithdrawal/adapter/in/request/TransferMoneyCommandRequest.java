@@ -1,10 +1,16 @@
 package com.test.cashwithdrawal.adapter.in.request;
 
 import com.test.cashwithdrawal.application.port.in.TransferMoneyCommand;
+import lombok.Builder;
+import lombok.ToString;
 import lombok.Value;
 
+import java.io.Serializable;
+
+@ToString
+@Builder
 @Value
-public class TransferMoneyCommandRequest {
+public class TransferMoneyCommandRequest implements Serializable {
     SourceTransferRequest source;
     DestinationTransferRequest destination;
     Long amount;

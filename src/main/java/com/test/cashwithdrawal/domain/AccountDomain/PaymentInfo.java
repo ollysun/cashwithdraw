@@ -2,6 +2,7 @@ package com.test.cashwithdrawal.domain.AccountDomain;
 
 import lombok.*;
 
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor

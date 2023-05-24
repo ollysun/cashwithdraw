@@ -31,9 +31,8 @@ public class AccountController {
 
     @PostMapping(path = "/payment")
     public ResponseEntity<TransferResponse> transferMoney(@RequestBody @Valid TransferMoneyCommandRequest paymentRequest) {
-        log.info(" payment request " + paymentRequest.toTransferMoneyCommand().toString());
         TransferPaymentResponse transferPaymentResponse = accountUseCase.sendMoney(paymentRequest.toTransferMoneyCommand());
-        return new ResponseEntity<>(TransferResponse.fromDomain(transferPaymentResponse), HttpStatus.OK);
+        return ResponseEntity.ok(new TransferResponse().fromDomain(transferPaymentResponse));
     }
 
 

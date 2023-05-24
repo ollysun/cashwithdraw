@@ -2,23 +2,24 @@ package com.test.cashwithdrawal.adapter.in.response;
 
 
 import com.test.cashwithdrawal.domain.AccountDomain.TransferPaymentResponse;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+import lombok.extern.slf4j.Slf4j;
 
-
+@Slf4j
+@ToString
 @Getter
 @Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class TransferResponse {
 
     private RequestInfoResponse requestInfoResponse;
     private PaymentInfoResponse paymentInfoResponse;
 
-    public static TransferResponse fromDomain(TransferPaymentResponse transferPaymentResponse) {
-        return new TransferResponse(
-            RequestInfoResponse.toRequestInfoResponse(transferPaymentResponse.getRequestInfo()),
-                PaymentInfoResponse.toPaymentInfoResponse(transferPaymentResponse.getPaymentInfo())
-        );
+    public TransferResponse fromDomain(TransferPaymentResponse transferPaymentResponse) {
+        requestInfoResponse = new RequestInfoResponse(transferPaymentResponse.getRequestInfo().getStatus());
+        paymentInfoResponse = new PaymentInfoResponse(transferPaymentResponse.getPaymentInfo().getAmount(),
+                transferPaymentResponse.getPaymentInfo().getId());
+        return new TransferResponse(requestInfoResponse, paymentInfoResponse);
     }
 }
