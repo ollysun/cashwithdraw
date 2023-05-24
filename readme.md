@@ -1,17 +1,27 @@
 ## cashwithdraw using clean code architecture
 
-
+```
 Java 11
 In-memory H2 Database
-
-```
-> java -version
-openjdk version "11" 2018-09-25
-OpenJDK Runtime Environment 18.9 (build 11+28)
-OpenJDK 64-Bit Server VM 18.9 (build 11+28, mixed mode)
+Docker
 ```
 
-### Compile
+### You can run it from Docker image or do maven compile
+
+### Docker image Compilation
+
+```
+Build the Jar file
+mvn clean package
+
+Build the image :  
+docker build -t cashwithdrawal:latest .
+
+Start the Docker Container in detach mode
+docker run -d -p 8181:8181 -t cashwithdrawal:latest 
+```
+
+### Spring Boot run
 
 `mvn spring-boot:run`
 

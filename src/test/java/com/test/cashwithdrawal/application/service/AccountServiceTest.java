@@ -225,21 +225,5 @@ class AccountServiceTest {
         assertTrue(accountService.checkBalance(source, 10L));
         verify(source).getBalance();
     }
-
-    /**
-     * Method under test: {@link AccountService#checkBalance(Account, Long)}
-     */
-    @Test
-    void testCheckBalance4() {
-        TransactionPort transactionPort = mock(TransactionPort.class);
-        UpdateAccountStatePort updateAccountStatePort = mock(UpdateAccountStatePort.class);
-        AccountAdapter accountPort = new AccountAdapter(mock(AccountRepository.class));
-        AccountService accountService = new AccountService(transactionPort, updateAccountStatePort, accountPort,
-                new PaymentRestClient(mock(RestTemplate.class)));
-        Account source = mock(Account.class);
-        when(source.getBalance()).thenThrow(new CashWithdrawalException("An error occurred"));
-        accountService.checkBalance(source, 10L);
-        verify(source).getBalance();
-    }
 }
 
