@@ -25,11 +25,11 @@ public class SecurityConfig  {
     public UserDetailsService userDetailsService() {
 
         UserDetails admin = User.withUsername("moses")
-                .password(passwordEncoder().encode("password"))
+                .password(passwordEncoder().encode("password1@"))
                 .roles("ADMIN")
                 .build();
         UserDetails user = User.withUsername("john")
-                .password(passwordEncoder().encode("password"))
+                .password(passwordEncoder().encode("password1@"))
                 .roles("USER")
                 .build();
         return new InMemoryUserDetailsManager(admin, user);
@@ -40,7 +40,6 @@ public class SecurityConfig  {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http.csrf().disable()
                 .authorizeHttpRequests()
-                .antMatchers("/accounts/create").permitAll()
                 .anyRequest().authenticated()
                 .and()
                 .httpBasic()

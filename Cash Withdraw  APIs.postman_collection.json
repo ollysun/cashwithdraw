@@ -1,0 +1,204 @@
+{
+	"info": {
+		"_postman_id": "ebfcf206-5858-44d6-8025-18621d855d21",
+		"name": "Cash Withdraw  APIs",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "105101",
+		"_collection_link": "https://www.postman.com/restless-comet-4109/workspace/grpc/collection/105101-ebfcf206-5858-44d6-8025-18621d855d21?action=share&creator=105101&source=collection_link"
+	},
+	"item": [
+		{
+			"name": "Account Transfer",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password1@",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "moses",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"source\": {\n        \"type\": \"COMPANY\",\n        \"sourceInformation\": {\n            \"name\": \"ONTOP INC\"\n        },\n        \"account\": {\n            \"accountNumber\": \"0245253419\",\n            \"currency\": \"USD\",\n            \"routingNumber\": \"028444018\"\n        }\n    },\n    \"destination\": {\n        \"name\": \"TONY STARK\",\n        \"account\": {\n            \"accountNumber\": \"1885226711\",\n            \"currency\": \"USD\",\n            \"routingNumber\": \"211927207\"\n        }\n    },\n    \"amount\": 300\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8181/accounts/payment",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"accounts",
+						"payment"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all Accounts",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password1@",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "moses",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8181/accounts",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"accounts"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Account",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password1@",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "moses",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"surname\": \"surname\",\n    \"firstname\": \"moses\",\n    \"routingNumber\": \"028444018\",\n    \"nin\": \"dfre345\",\n    \"accountNumber\": \"0245253419\",\n    \"currency\": \"USD\",\n    \"bankName\": \"West Bank\",\n    \"balance\": 5000\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "localhost:8181/accounts/create",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"accounts",
+						"create"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View all transaction",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password1@",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "moses",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8181/transaction/search",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"transaction",
+						"search"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "View transaction by amount",
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "password1@",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "moses",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "localhost:8181/transaction/search?amount=470",
+					"host": [
+						"localhost"
+					],
+					"port": "8181",
+					"path": [
+						"transaction",
+						"search"
+					],
+					"query": [
+						{
+							"key": "amount",
+							"value": "470"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
