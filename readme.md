@@ -56,7 +56,7 @@ Body:
     "balance": 5000
 }
 ```
-#### Get all account
+#### Get all virtual account
 ```
 GET: http://localhost:8181/accounts
 ```
