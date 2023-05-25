@@ -1,12 +1,9 @@
 package com.test.cashwithdrawal.adapter.in.web;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -14,52 +11,22 @@ import com.test.cashwithdrawal.adapter.in.request.*;
 import com.test.cashwithdrawal.adapter.in.response.PaymentInfoResponse;
 import com.test.cashwithdrawal.adapter.in.response.RequestInfoResponse;
 import com.test.cashwithdrawal.adapter.in.response.TransferResponse;
-import com.test.cashwithdrawal.adapter.out.persistence.Adapter.AccountAdapter;
-import com.test.cashwithdrawal.adapter.out.persistence.repositories.AccountRepository;
 import com.test.cashwithdrawal.application.port.in.AccountUseCase;
-import com.test.cashwithdrawal.application.port.in.PaymentRestClient;
-import com.test.cashwithdrawal.application.port.in.TransferMoneyCommand;
 import com.test.cashwithdrawal.application.port.in.security.SecurityConfig;
-import com.test.cashwithdrawal.application.port.out.TransactionPort;
-import com.test.cashwithdrawal.application.port.out.UpdateAccountStatePort;
-import com.test.cashwithdrawal.application.service.AccountService;
-import com.test.cashwithdrawal.domain.AccountDomain.Account;
 import com.test.cashwithdrawal.domain.AccountDomain.PaymentInfo;
 import com.test.cashwithdrawal.domain.AccountDomain.RequestInfo;
 import com.test.cashwithdrawal.domain.AccountDomain.TransferPaymentResponse;
-
-import java.util.ArrayList;
 import java.util.UUID;
-
-import lombok.With;
 import lombok.extern.slf4j.Slf4j;
-import org.aspectj.lang.annotation.Before;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.annotation.Import;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
-import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
 
 @Slf4j
 @WebMvcTest(controllers = AccountController.class)

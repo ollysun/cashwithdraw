@@ -41,7 +41,7 @@ and
 username: john
 password: password1@
 ```
-#### Create or Configure New Account 
+#### Create or Configure New Virtual Account 
 ```
 POST: http://localhost:8181/accounts
 Body:
