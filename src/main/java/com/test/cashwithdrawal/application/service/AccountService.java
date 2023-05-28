@@ -37,7 +37,7 @@ public class AccountService implements AccountUseCase {
     private final PaymentRestClient paymentRestClient;
 
     @Value("${minimum.balance}")
-    private Long minimumBalance;
+    private final Long minimumBalance;
     @Override
     public TransferPaymentResponse sendMoney(TransferMoneyCommand command) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
