@@ -14,6 +14,7 @@ import com.test.cashwithdrawal.shared.UseCase;
 import com.test.cashwithdrawal.shared.exception.CashWithdrawalException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 
@@ -34,6 +35,9 @@ public class AccountService implements AccountUseCase {
     private final AccountPort accountPort;
 
     private final PaymentRestClient paymentRestClient;
+
+    @Value("${minimum.balance}")
+    private Long minimumBalance;
     @Override
     public TransferPaymentResponse sendMoney(TransferMoneyCommand command) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -77,6 +81,9 @@ public class AccountService implements AccountUseCase {
 
     @Override
     public Account createAccount(Account account) {
+        if(account.getBalance() <= 0 || account.getBalance() < minimumBalance){
+            throw new CashWithdrawalException("Please enter the minimum balance to create account:  " + minimumBalance);
+        }
         return accountPort.save(account);
     }
 
