@@ -6,6 +6,7 @@ import lombok.Setter;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Positive;
 
 @Getter
 @Setter
@@ -25,6 +26,7 @@ public class CreateAccountRequest {
     String bankName;
     @NotBlank(message = "please enter the currency")
     String currency;
+    @Positive(message = "Please enter number")
     @NotNull(message = "please enter the balance")
     Long balance = 0L;
 
