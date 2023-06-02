@@ -12,6 +12,8 @@ import com.test.cashwithdrawal.domain.AccountDomain.TransferPaymentResponse;
 import com.test.cashwithdrawal.shared.TransactionType;
 import com.test.cashwithdrawal.shared.UseCase;
 import com.test.cashwithdrawal.shared.exception.CashWithdrawalException;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,10 +25,19 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 @Slf4j
-@RequiredArgsConstructor
 @UseCase
 @Transactional
 public class AccountService implements AccountUseCase {
+
+    public AccountService(TransactionPort transactionPort, UpdateAccountStatePort updateAccountStatePort, AccountPort accountPort,
+                          PaymentRestClient paymentRestClient,
+                          @Value("${minimum.balance}") Long minimumBalance) {
+        this.transactionPort = transactionPort;
+        this.updateAccountStatePort = updateAccountStatePort;
+        this.accountPort = accountPort;
+        this.paymentRestClient = paymentRestClient;
+        this.minimumBalance = minimumBalance;
+    }
 
     private final TransactionPort transactionPort;
 
@@ -36,8 +47,7 @@ public class AccountService implements AccountUseCase {
 
     private final PaymentRestClient paymentRestClient;
 
-    @Value("${minimum.balance}")
-    private final Long minimumBalance;
+    private Long minimumBalance;
     @Override
     public TransferPaymentResponse sendMoney(TransferMoneyCommand command) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();

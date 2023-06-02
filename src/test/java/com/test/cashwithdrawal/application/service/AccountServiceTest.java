@@ -49,7 +49,8 @@ class AccountServiceTest {
             Mockito.mock(PaymentRestClient.class);
 
     private final AccountService accountService =
-            new AccountService(transactionPort,updateAccountStatePort,accountPort,paymentRestClient, 1000L);
+            new AccountService(transactionPort,updateAccountStatePort,accountPort,paymentRestClient,
+                    1000L);
 
 
 
@@ -100,6 +101,7 @@ class AccountServiceTest {
         UpdateAccountStatePort updateAccountStatePort = mock(UpdateAccountStatePort.class);
         assertTrue((new AccountService(transactionPort, updateAccountStatePort, accountPort,
                 new PaymentRestClient(mock(RestTemplate.class)), 1000L)).getAll().isEmpty());
+
         verify(accountRepository).findAll();
     }
 }
